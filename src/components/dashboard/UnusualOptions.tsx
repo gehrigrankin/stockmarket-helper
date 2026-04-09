@@ -1,11 +1,11 @@
 "use client";
 
-import { Zap, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { Zap, AlertTriangle, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { SectionWrapper } from "./SectionWrapper";
 import { useAutoRefresh } from "@/lib/hooks/use-auto-refresh";
-import { formatNumber } from "@/lib/utils";
 
 interface UnusualOption {
   ticker: string;
@@ -25,6 +25,8 @@ interface OptionsData {
   message?: string;
 }
 
+const PREVIEW_COUNT = 3;
+
 async function fetchOptions(): Promise<OptionsData> {
   const res = await fetch("/api/options/unusual");
   if (!res.ok) throw new Error("Failed to fetch");
@@ -37,100 +39,92 @@ function formatPremium(num: number): string {
   return `$${num.toFixed(0)}`;
 }
 
+function OptionCard({ opt }: { opt: UnusualOption }) {
+  return (
+    <div
+      className={`flex items-center justify-between py-1.5 px-2 rounded text-xs ${
+        opt.isWhaleAlert ? "bg-amber-950/20 border border-amber-800/30" : "hover:bg-muted/50"
+      }`}
+    >
+      <div className="flex items-center gap-1.5">
+        <span className="font-bold w-10">{opt.ticker}</span>
+        <Badge
+          variant={opt.type === "CALL" ? "success" : "destructive"}
+          className="text-[9px] px-1 py-0"
+        >
+          {opt.type}
+        </Badge>
+        {opt.isWhaleAlert && (
+          <AlertTriangle className="h-3 w-3 text-amber-400" />
+        )}
+      </div>
+      <div className="flex items-center gap-2 text-[11px]">
+        <span className="text-muted-foreground">${opt.strike}</span>
+        <span className="font-mono font-semibold">{formatPremium(opt.premium)}</span>
+        <span
+          className={`font-semibold w-12 text-right ${
+            opt.sentiment === "Bullish" ? "text-emerald-400" : "text-red-400"
+          }`}
+        >
+          {opt.sentiment === "Bullish" ? "Bull" : "Bear"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function UnusualOptions() {
+  const [expanded, setExpanded] = useState(false);
   const { data, isLoading, lastUpdated, refresh } = useAutoRefresh<OptionsData>({
     fetchFn: fetchOptions,
     intervalMs: 120000,
   });
 
-  const options = data?.options || [];
+  // Sort whale alerts first
+  const allOptions = [...(data?.options || [])].sort(
+    (a, b) => (b.isWhaleAlert ? 1 : 0) - (a.isWhaleAlert ? 1 : 0) || b.premium - a.premium
+  );
+  const options = expanded ? allOptions : allOptions.slice(0, PREVIEW_COUNT);
+  const hasMore = allOptions.length > PREVIEW_COUNT;
 
   return (
     <SectionWrapper
       id="options"
       title="Unusual Options"
       icon={<Zap className="h-4 w-4" />}
-      description="Large options bets that may signal where institutional money is positioning. Whale alert = premium over $500K. Calls are bullish bets, puts are bearish."
+      description="Large options bets that may signal where institutional money is positioning. Triangle icon = whale alert (premium over $500K). Calls = bullish, Puts = bearish."
       onRefresh={refresh}
       isLoading={isLoading}
       lastUpdated={lastUpdated}
       badge={data?.isDemo ? "DEMO" : "LIVE"}
     >
       {data?.isDemo && (
-        <div className="text-[11px] text-amber-400/80 bg-amber-950/20 rounded px-3 py-1.5 mb-3">
-          Demo data — set UNUSUAL_WHALES_KEY in .env.local for live options flow
+        <div className="text-[10px] text-amber-400/70 mb-2">
+          Demo data — add UNUSUAL_WHALES_KEY for live flow
         </div>
       )}
 
       {isLoading && !data ? (
-        <div className="text-xs text-muted-foreground py-8 text-center">Loading options flow...</div>
+        <div className="text-xs text-muted-foreground py-6 text-center">Loading...</div>
       ) : (
-        <ScrollArea className="h-[350px]">
-          <div className="space-y-1.5">
+        <div>
+          <div className="space-y-0.5">
             {options.map((opt, i) => (
-              <div
-                key={i}
-                className={`rounded-md border p-2.5 text-xs ${
-                  opt.isWhaleAlert
-                    ? "border-amber-800/50 bg-amber-950/20"
-                    : "border-border/30 hover:bg-muted/50"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-sm">{opt.ticker}</span>
-                    <Badge
-                      variant={opt.type === "CALL" ? "success" : "destructive"}
-                      className="text-[9px] px-1.5 py-0"
-                    >
-                      {opt.type}
-                    </Badge>
-                    {opt.isWhaleAlert && (
-                      <Badge variant="warning" className="text-[9px] px-1.5 py-0 gap-0.5">
-                        <AlertTriangle className="h-2.5 w-2.5" />
-                        WHALE
-                      </Badge>
-                    )}
-                  </div>
-                  <span
-                    className={`font-bold text-sm ${
-                      opt.sentiment === "Bullish"
-                        ? "text-emerald-400"
-                        : opt.sentiment === "Bearish"
-                        ? "text-red-400"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {opt.sentiment}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  <span>
-                    Strike <span className="text-foreground font-mono">${opt.strike}</span>
-                  </span>
-                  <span>
-                    Exp{" "}
-                    <span className="text-foreground">
-                      {new Date(opt.expiry).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </span>
-                  <span>
-                    Premium{" "}
-                    <span className="text-foreground font-mono font-semibold">
-                      {formatPremium(opt.premium)}
-                    </span>
-                  </span>
-                  <span className="hidden sm:inline">
-                    Vol <span className="text-foreground">{formatNumber(opt.volume)}</span>
-                  </span>
-                </div>
-              </div>
+              <OptionCard key={i} opt={opt} />
             ))}
           </div>
-        </ScrollArea>
+          {hasMore && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-6 text-[10px] text-muted-foreground mt-1"
+              onClick={() => setExpanded(!expanded)}
+            >
+              <ChevronDown className={`h-3 w-3 mr-1 transition-transform ${expanded ? "rotate-180" : ""}`} />
+              {expanded ? "Show less" : `Show all ${allOptions.length}`}
+            </Button>
+          )}
+        </div>
       )}
     </SectionWrapper>
   );

@@ -67,27 +67,27 @@ export function Watchlist() {
       description="Your personal tickers. Prices update every 30s. Saved in your browser."
       badge={`${tickers.length} tickers`}
     >
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-2">
         <Input
           placeholder="Add ticker..."
           value={input}
           onChange={(e) => setInput(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          className="font-mono text-sm h-8 max-w-[160px]"
+          className="font-mono text-sm h-7 max-w-[140px]"
         />
         <Button
           size="sm"
           variant="outline"
           onClick={handleAdd}
-          className="h-8"
+          className="h-7 px-2"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3 w-3" />
         </Button>
       </div>
 
       {tickers.length === 0 ? (
-        <div className="text-xs text-muted-foreground py-4 text-center">
-          Add tickers to your watchlist to track them
+        <div className="text-[11px] text-muted-foreground py-2 text-center">
+          Type a ticker above and press Enter
         </div>
       ) : (
         <div className="space-y-0.5">

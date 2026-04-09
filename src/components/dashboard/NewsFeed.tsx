@@ -1,8 +1,9 @@
 "use client";
 
-import { Newspaper, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { Newspaper, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { SectionWrapper } from "./SectionWrapper";
 import { useAutoRefresh } from "@/lib/hooks/use-auto-refresh";
 import { timeAgo } from "@/lib/utils";
@@ -15,6 +16,8 @@ interface NewsItem {
   ticker: string | null;
   isHighlight: boolean;
 }
+
+const PREVIEW_COUNT = 5;
 
 async function fetchNews(): Promise<{ items: NewsItem[] }> {
   const res = await fetch("/api/news/feed");
@@ -31,6 +34,7 @@ const sourceColors: Record<string, string> = {
 };
 
 export function NewsFeed() {
+  const [expanded, setExpanded] = useState(false);
   const { data, isLoading, lastUpdated, refresh } = useAutoRefresh<{
     items: NewsItem[];
   }>({
@@ -38,7 +42,9 @@ export function NewsFeed() {
     intervalMs: 120000,
   });
 
-  const items = data?.items || [];
+  const allItems = data?.items || [];
+  const items = expanded ? allItems : allItems.slice(0, PREVIEW_COUNT);
+  const hasMore = allItems.length > PREVIEW_COUNT;
 
   return (
     <SectionWrapper
@@ -49,14 +55,14 @@ export function NewsFeed() {
       onRefresh={refresh}
       isLoading={isLoading}
       lastUpdated={lastUpdated}
-      badge="2m refresh"
+      badge="2m"
     >
       {isLoading && !data ? (
-        <div className="text-xs text-muted-foreground py-8 text-center">Loading news...</div>
+        <div className="text-xs text-muted-foreground py-6 text-center">Loading news...</div>
       ) : items.length === 0 ? (
-        <div className="text-xs text-muted-foreground py-8 text-center">No news available</div>
+        <div className="text-xs text-muted-foreground py-6 text-center">No news available</div>
       ) : (
-        <ScrollArea className="h-[400px]">
+        <div>
           <div className="space-y-0.5">
             {items.map((item, i) => (
               <a
@@ -64,55 +70,50 @@ export function NewsFeed() {
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`block py-2 px-2 rounded text-xs hover:bg-muted/50 transition-colors group ${
+                className={`block py-2 px-2 rounded text-xs hover:bg-muted/50 transition-colors ${
                   item.isHighlight
                     ? "border-l-2 border-amber-500 bg-amber-950/20"
                     : ""
                 }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                      <span
-                        className={`text-[10px] font-semibold ${
-                          sourceColors[item.source] || "text-muted-foreground"
-                        }`}
-                      >
-                        {item.source}
-                      </span>
-                      {item.ticker && (
-                        <Badge
-                          variant="outline"
-                          className="text-[9px] px-1 py-0 h-3.5"
-                        >
-                          ${item.ticker}
-                        </Badge>
-                      )}
-                      {item.isHighlight && (
-                        <Badge
-                          variant="warning"
-                          className="text-[9px] px-1 py-0 h-3.5"
-                        >
-                          CATALYST
-                        </Badge>
-                      )}
-                      <span className="text-[10px] text-muted-foreground sm:hidden">
-                        {timeAgo(new Date(item.pubDate))}
-                      </span>
-                    </div>
-                    <p className="text-foreground leading-relaxed text-[13px]">{item.title}</p>
-                  </div>
-                  <div className="items-center gap-1 shrink-0 hidden sm:flex">
-                    <span className="text-[10px] text-muted-foreground">
-                      {timeAgo(new Date(item.pubDate))}
-                    </span>
-                    <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
+                <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                  <span
+                    className={`text-[10px] font-semibold ${
+                      sourceColors[item.source] || "text-muted-foreground"
+                    }`}
+                  >
+                    {item.source}
+                  </span>
+                  {item.ticker && (
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
+                      ${item.ticker}
+                    </Badge>
+                  )}
+                  {item.isHighlight && (
+                    <Badge variant="warning" className="text-[9px] px-1 py-0 h-3.5">
+                      CATALYST
+                    </Badge>
+                  )}
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {timeAgo(new Date(item.pubDate))}
+                  </span>
                 </div>
+                <p className="text-foreground leading-relaxed text-[13px]">{item.title}</p>
               </a>
             ))}
           </div>
-        </ScrollArea>
+          {hasMore && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-7 text-[11px] text-muted-foreground mt-1"
+              onClick={() => setExpanded(!expanded)}
+            >
+              <ChevronDown className={`h-3 w-3 mr-1 transition-transform ${expanded ? "rotate-180" : ""}`} />
+              {expanded ? "Show fewer" : `Show all ${allItems.length} headlines`}
+            </Button>
+          )}
+        </div>
       )}
     </SectionWrapper>
   );
