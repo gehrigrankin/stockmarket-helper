@@ -71,6 +71,7 @@ export function CatalystCalendar() {
       onRefresh={refresh}
       isLoading={isLoading}
       lastUpdated={lastUpdated}
+      description="Upcoming events that could move stock prices — earnings reports, Fed meetings, etc. Today's events highlighted in gold."
       badge="Today + 3 days"
     >
       {isLoading && !data ? (

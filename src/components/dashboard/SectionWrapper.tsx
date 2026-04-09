@@ -12,7 +12,7 @@ interface SectionWrapperProps {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-  refreshInterval?: number;
+  description?: string;
   onRefresh?: () => void;
   isLoading?: boolean;
   lastUpdated?: Date | null;
@@ -24,6 +24,7 @@ export function SectionWrapper({
   title,
   icon,
   children,
+  description,
   onRefresh,
   isLoading,
   lastUpdated,
@@ -34,28 +35,28 @@ export function SectionWrapper({
   return (
     <Card id={id} className="border-border/50">
       <CardHeader className="py-3 px-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex items-center gap-2 hover:text-primary transition-colors"
+            className="flex items-center gap-2 hover:text-primary transition-colors min-w-0"
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 shrink-0" />
             ) : (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4 shrink-0" />
             )}
-            <span className="text-muted-foreground">{icon}</span>
-            <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+            <span className="text-muted-foreground shrink-0">{icon}</span>
+            <CardTitle className="text-sm font-semibold whitespace-nowrap">{title}</CardTitle>
             {badge && (
-              <Badge variant="secondary" className="text-[10px] ml-1">
+              <Badge variant="secondary" className="text-[10px] ml-1 hidden sm:inline-flex">
                 {badge}
               </Badge>
             )}
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {lastUpdated && (
-              <span className="text-[10px] text-muted-foreground">
-                Updated {lastUpdated.toLocaleTimeString()}
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                {lastUpdated.toLocaleTimeString()}
               </span>
             )}
             {onRefresh && (
@@ -73,6 +74,11 @@ export function SectionWrapper({
             )}
           </div>
         </div>
+        {description && !collapsed && (
+          <p className="text-[11px] text-muted-foreground mt-1 ml-6 leading-relaxed">
+            {description}
+          </p>
+        )}
       </CardHeader>
       {!collapsed && <CardContent className="pt-0">{children}</CardContent>}
     </Card>

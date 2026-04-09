@@ -18,11 +18,11 @@ import { Watchlist } from "@/components/dashboard/Watchlist";
 
 const NAV_ITEMS = [
   { id: "movers", label: "Movers", icon: TrendingUp },
-  { id: "calendar", label: "Calendar", icon: Calendar },
-  { id: "news", label: "News", icon: Newspaper },
-  { id: "options", label: "Options", icon: Zap },
-  { id: "lookup", label: "Lookup", icon: Search },
   { id: "watchlist", label: "Watchlist", icon: Eye },
+  { id: "lookup", label: "Lookup", icon: Search },
+  { id: "news", label: "News", icon: Newspaper },
+  { id: "calendar", label: "Calendar", icon: Calendar },
+  { id: "options", label: "Options", icon: Zap },
 ];
 
 function scrollTo(id: string) {
@@ -34,25 +34,22 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Top nav bar */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-[1800px] mx-auto px-4 h-10 flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto px-3 sm:px-4 h-11 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
             <span className="text-sm font-bold tracking-tight">
               StockTerminal
             </span>
-            <span className="text-[10px] text-muted-foreground">
-              Day Trading Research
-            </span>
           </div>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5">
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => scrollTo(id)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
               >
-                <Icon className="h-3 w-3" />
-                <span className="hidden sm:inline">{label}</span>
+                <Icon className="h-3.5 w-3.5" />
+                <span className="hidden md:inline">{label}</span>
               </button>
             ))}
           </nav>
@@ -64,25 +61,27 @@ export default function Dashboard() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-[1800px] mx-auto p-4 space-y-3">
-        {/* Top row: Movers + Calendar + Watchlist */}
+      <main className="max-w-[1800px] mx-auto p-3 sm:p-4 space-y-3">
+        {/* Row 1: Movers (wide) + Watchlist (sidebar) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="lg:col-span-2">
             <PreMarketMovers />
           </div>
-          <div className="space-y-3">
+          <div>
             <Watchlist />
-            <CatalystCalendar />
           </div>
         </div>
 
-        {/* Middle: Ticker Lookup */}
+        {/* Row 2: Ticker Lookup (full width) */}
         <TickerLookup />
 
-        {/* Bottom row: News + Options */}
+        {/* Row 3: News + Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <NewsFeed />
-          <UnusualOptions />
+          <div className="space-y-3">
+            <CatalystCalendar />
+            <UnusualOptions />
+          </div>
         </div>
       </main>
 

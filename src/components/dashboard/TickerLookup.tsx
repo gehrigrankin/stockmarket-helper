@@ -112,6 +112,7 @@ export function TickerLookup() {
       id="lookup"
       title="Quick Ticker Lookup"
       icon={<Search className="h-4 w-4" />}
+      description="Search any stock ticker to see its current price, 5-day chart, key stats (float, short interest, etc.), and recent news."
     >
       <div className="flex gap-2 mb-3">
         <Input
@@ -133,7 +134,7 @@ export function TickerLookup() {
       {quote && (
         <div className="space-y-3">
           {/* Price header */}
-          <div className="flex items-baseline gap-3">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-lg font-bold">{quote.symbol}</span>
             <span className="text-sm text-muted-foreground">{quote.shortName}</span>
             <span className="text-xl font-bold font-mono">

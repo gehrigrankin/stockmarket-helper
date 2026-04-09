@@ -31,25 +31,25 @@ async function fetchMovers(): Promise<MoversData> {
 function MoverRow({ mover, type }: { mover: Mover; type: "gainer" | "loser" }) {
   const isUp = type === "gainer";
   return (
-    <div className="flex items-center justify-between py-1.5 px-2 hover:bg-muted/50 rounded text-xs">
+    <div className="flex items-center justify-between py-2 px-2 hover:bg-muted/50 rounded text-xs border-b border-border/20 last:border-0">
       <div className="flex items-center gap-2 min-w-0">
         <span className="font-bold text-sm w-14">{mover.ticker}</span>
         {mover.highActivity && (
           <Badge variant="warning" className="text-[9px] px-1 py-0 gap-0.5">
             <Activity className="h-2.5 w-2.5" />
-            HIGH
+            HIGH VOL
           </Badge>
         )}
       </div>
-      <div className="flex items-center gap-3">
-        <span className="text-muted-foreground w-16 text-right">
-          Vol: {formatNumber(mover.volume)}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="text-muted-foreground text-right text-[10px] hidden sm:block">
+          {formatNumber(mover.volume)}
         </span>
-        <span className="w-16 text-right font-mono">
+        <span className="text-right font-mono text-xs">
           {formatCurrency(mover.price)}
         </span>
         <span
-          className={`w-16 text-right font-mono font-semibold ${
+          className={`w-16 text-right font-mono font-bold text-sm ${
             isUp ? "text-emerald-400" : "text-red-400"
           }`}
         >
@@ -72,21 +72,22 @@ export function PreMarketMovers() {
   return (
     <SectionWrapper
       id="movers"
-      title="Pre-Market Movers"
+      title="Top Movers"
       icon={<TrendingUp className="h-4 w-4" />}
+      description="Stocks with the biggest price swings today. Orange HIGH VOL badge = volume is 2x+ the average, meaning unusual interest."
       onRefresh={refresh}
       isLoading={isLoading}
       lastUpdated={lastUpdated}
       badge="60s refresh"
     >
       {isLoading && !data ? (
-        <div className="text-xs text-muted-foreground py-4 text-center">Loading movers...</div>
+        <div className="text-xs text-muted-foreground py-8 text-center">Loading movers...</div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-emerald-400">
+            <div className="flex items-center gap-1.5 mb-1 text-xs font-semibold text-emerald-400 px-2">
               <TrendingUp className="h-3.5 w-3.5" />
-              Top Gainers
+              Gainers
             </div>
             <ScrollArea className="h-[280px]">
               {gainers.length > 0 ? (
@@ -94,14 +95,14 @@ export function PreMarketMovers() {
                   <MoverRow key={m.ticker} mover={m} type="gainer" />
                 ))
               ) : (
-                <div className="text-xs text-muted-foreground py-2">No data available</div>
+                <div className="text-xs text-muted-foreground py-4 text-center">No data available</div>
               )}
             </ScrollArea>
           </div>
           <div>
-            <div className="flex items-center gap-1.5 mb-2 text-xs font-semibold text-red-400">
+            <div className="flex items-center gap-1.5 mb-1 text-xs font-semibold text-red-400 px-2">
               <TrendingDown className="h-3.5 w-3.5" />
-              Top Losers
+              Losers
             </div>
             <ScrollArea className="h-[280px]">
               {losers.length > 0 ? (
@@ -109,7 +110,7 @@ export function PreMarketMovers() {
                   <MoverRow key={m.ticker} mover={m} type="loser" />
                 ))
               ) : (
-                <div className="text-xs text-muted-foreground py-2">No data available</div>
+                <div className="text-xs text-muted-foreground py-4 text-center">No data available</div>
               )}
             </ScrollArea>
           </div>

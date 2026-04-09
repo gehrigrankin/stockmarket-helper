@@ -64,6 +64,7 @@ export function Watchlist() {
       onRefresh={fetchQuotes}
       isLoading={isLoading}
       lastUpdated={lastUpdated}
+      description="Your personal tickers. Prices update every 30s. Saved in your browser."
       badge={`${tickers.length} tickers`}
     >
       <div className="flex gap-2 mb-3">

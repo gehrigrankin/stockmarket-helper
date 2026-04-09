@@ -27,6 +27,18 @@ const HIGHLIGHT_KEYWORDS = [
   "IPO", "offering", "guidance",
 ];
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)));
+}
+
 function extractTicker(title: string): string | null {
   // Look for patterns like (AAPL), $AAPL, or standalone tickers
   const dollarMatch = title.match(/\$([A-Z]{1,5})\b/);
@@ -72,7 +84,7 @@ async function parseRssFeed(feedUrl: string, source: string): Promise<FeedItem[]
       const linkMatch = itemXml.match(/<link>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/link>/);
       const pubDateMatch = itemXml.match(/<pubDate>(.*?)<\/pubDate>/);
 
-      const title = titleMatch?.[1]?.trim() || "";
+      const title = decodeHtmlEntities(titleMatch?.[1]?.trim() || "");
       if (!title) continue;
 
       items.push({
